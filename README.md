@@ -22,7 +22,7 @@ Observamos que el pod este como "running"
 ```
 $ watch kubectl get pods
 ```
-(Se oprime Ctrl+C para regresar al CLI nuevamente)
+##### (Se oprime Ctrl+C para regresar al CLI nuevamente)
 
 
 ## Nodo Data
