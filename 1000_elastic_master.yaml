@@ -1,0 +1,113 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-master-config
+  labels:
+    app: elasticsearch
+    role: master
+data:
+  elasticsearch.yml: |-
+    cluster.name: ${CLUSTER_NAME}
+    node.name: ${NODE_NAME}
+    discovery.seed_hosts: ${NODE_LIST}
+    cluster.initial_master_nodes: ${MASTER_NODES}
+    bootstrap.memory_lock: ${MEMORY_LOCK}
+
+    network.host: 0.0.0.0
+
+    node.roles: [ master ]
+
+    xpack.license.self_generated.type: trial
+    xpack.security.enabled: true
+  limits.conf: |-
+    elasticsearch soft memlock unlimited
+    elasticsearch hard memlock unlimited
+    elasticsearch hard nofile 65536
+    elasticsearch soft nofile 65536
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-master
+  labels:
+    app: elasticsearch
+    role: master
+spec:
+  selector:
+    app: elasticsearch
+    role: master
+  ports:
+  - port: 9300
+    name: transport
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elastic-master
+  labels:
+    app: elasticsearch
+    role: master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+      role: master
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+        role: master
+    spec:
+      containers:
+      - name: elasticsearch-master
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.13.2
+        env:
+          - name: CLUSTER_NAME
+            value: elasticsearch
+          - name: NODE_NAME
+            value: elasticsearch-master
+          - name: NODE_LIST
+            value: elasticsearch-master,elasticsearch-data,elasticsearch-ingest
+          - name: MASTER_NODES
+            value: elasticsearch-master
+          - name: "ES_JAVA_OPTS"
+            value: "-Xms512m -Xmx512m"
+          - name: "MEMORY_LOCK"
+            value: "false"
+        resources:
+          limits:
+            memory: "1024Mi"
+            cpu: "1500m"
+        ports:
+        - containerPort: 9300
+          name: transport
+        volumeMounts:
+        - name: config
+          mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+          readOnly: true
+          subPath: elasticsearch.yml
+        - name: storage
+          mountPath: /data
+        - name: limits
+          mountPath: /etc/security/limits.conf
+          readOnly: true
+          subPath: limits.conf
+      volumes:
+        - name: config
+          configMap:
+            name: elasticsearch-master-config
+        - name: limits
+          configMap:
+            name: elasticsearch-master-config
+        - name: "storage"
+          emptyDir:
+            medium: ""
+      initContainers:
+        - name: increase-vm-max-map
+          image: busybox
+          command: ["sysctl", "-w", "vm.max_map_count=262144"]
+          securityContext:
+            privileged: true
+---
