@@ -53,3 +53,34 @@ Observamos que el pod este como "running"
 $ watch kubectl get pods
 ```
 (Se oprime Ctrl+C para regresar al CLI nuevamente)
+
+
+
+## Confirmar conectividad entre los nodos
+
+Se observa los logs en el nodo master donde pasa de estatus a YELLOW a GREEN
+
+```
+$ kubectl logs -f [NombrePOD]
+```
+
+## Generación de Contraseñas
+
+Se ingresa al nodo master de modo interactivo de la siguienta manera:
+
+```
+$ kubectl exec -it [nombrePOD] -- /bin/bash
+```
+
+Entrar a la siguiente carpeta __"/usr/share/elasticsearch/bin"__ y ejecutar el comando:
+```
+$ elasticsearch-setup-passwords auto -b
+```
+Observar la respuesta y guardar las contraseñas para cada usuario
+
+## Generar Secret
+
+Con la contraseña del usuario "elastic" la vamos a guardar en una variable llamada Secret usando el siguiente ejemplo:
+```
+$ kubectl create secret generic elasticsearch-pw-elastic --from-literal password=WbWIkphCVHO3kL45PAEI
+```
