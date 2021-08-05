@@ -12,13 +12,12 @@ data:
     node.name: ${NODE_NAME}
     discovery.seed_hosts: ${NODE_LIST}
     cluster.initial_master_nodes: ${MASTER_NODES}
-
+    bootstrap.memory_lock: ${MEMORY_LOCK}
 
     network.host: 0.0.0.0
 
     node.roles: [ data ]
 
-    bootstrap.memory_lock: false
     xpack.license.self_generated.type: trial
     xpack.security.enabled: true
   limits.conf: |-
@@ -76,6 +75,8 @@ spec:
             value: elasticsearch-master
           - name: "ES_JAVA_OPTS"
             value: "-Xms512m -Xmx512m"
+          - name: "MEMORY_LOCK"
+            value: "false"
         ports:
         - containerPort: 9300
           name: transport
