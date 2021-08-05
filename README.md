@@ -76,7 +76,34 @@ Entrar a la siguiente carpeta __"/usr/share/elasticsearch/bin"__ y ejecutar el c
 ```
 $ elasticsearch-setup-passwords auto -b
 ```
-Observar la respuesta y guardar las contraseñas para cada usuario
+Observar la respuesta y guardar las contraseñas para cada usuario, ejemplo del comando:
+
+```
+[root@elastic-master-5bdbdb9bf6-2t692 bin]# elasticsearch-setup-passwords auto -b
+Changed password for user apm_system
+PASSWORD apm_system = sdfsferfreREGDsdfdfsg
+
+Changed password for user kibana_system
+PASSWORD kibana_system = DFGgfdgdfgdfg345rfd34
+
+Changed password for user kibana
+PASSWORD kibana = DFDFGdfgfdgderg34456y7ergs
+
+Changed password for user logstash_system
+PASSWORD logstash_system = JYUKRDSfdsgfrthjYJc5464wea
+
+Changed password for user beats_system
+PASSWORD beats_system = SDgrhgdfTHhdfhty56754egr
+
+Changed password for user remote_monitoring_user
+PASSWORD remote_monitoring_user = 34reafasdfASDFdsagdsaagds
+
+Changed password for user elastic
+PASSWORD elastic = sdfsdf42erafSDFG3q434
+
+[root@elastic-master-5bdbdb9bf6-2t692 bin]# 
+
+```
 
 ## Generar Secret
 
@@ -84,3 +111,6 @@ Con la contraseña del usuario "elastic" la vamos a guardar en una variable llam
 ```
 $ kubectl create secret generic elasticsearch-pw-elastic --from-literal password=WbWIkphCVHO3kL45PAEI
 ```
+
+
+# FIN PARA ELASTIC, IR A KIBANA
