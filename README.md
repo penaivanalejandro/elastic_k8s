@@ -61,7 +61,7 @@ $ watch kubectl get pods
 Se observa los logs en el nodo master donde pasa de estatus a YELLOW a GREEN
 
 ```
-$ kubectl logs -f [NombrePOD]
+$ kubectl logs -f $(kubectl get pods | grep elastic-master | sed -n 1p | awk '{print $1}') | grep "Cluster health status changed from \[YELLOW\] to \[GREEN\]"
 ```
 
 ## Generación de Contraseñas
