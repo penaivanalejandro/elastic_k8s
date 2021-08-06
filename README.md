@@ -107,9 +107,9 @@ PASSWORD elastic = sdfsdf42erafSDFG3q434
 
 ## Generar Secret
 
-Con la contraseña del usuario "elastic" la vamos a guardar en una variable llamada Secret usando el siguiente ejemplo:
+Con la contraseña del usuario "kibana_system" la vamos a guardar en una variable llamada Secret usando el siguiente ejemplo:
 ```
-$ kubectl create secret generic elasticsearch-pw-elastic --from-literal password=WbWIkphCVHO3kL45PAEI
+$ kubectl create secret generic kibana-system-pw --from-literal password=WbWIkphCVHO3kL45PAEI
 ```
 
 
