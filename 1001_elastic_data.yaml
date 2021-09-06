@@ -78,6 +78,10 @@ spec:
         ports:
         - containerPort: 9300
           name: transport
+        resources:
+          limits:
+            memory: "3072Mi"
+            cpu: "2000m"
         volumeMounts:
         - name: config
           mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
