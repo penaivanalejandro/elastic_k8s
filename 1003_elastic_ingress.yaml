@@ -6,13 +6,14 @@ metadata:
     app: elastic-ingapp
 spec:
   rules:
-  - host: ux360.izzi.mx
+  - host: ux360-http.izzi.mx
     http:
       paths:
-      - pathType: Prefix
-        path: "/elastic"
+      - path: /elastic
+        pathType: Prefix
         backend:
           service:
             name: elasticsearch-ingest
             port: 
               number: 9200
+  ingressClassName: nginx

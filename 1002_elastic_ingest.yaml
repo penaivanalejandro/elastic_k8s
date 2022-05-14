@@ -63,7 +63,7 @@ spec:
     spec:
       containers:
       - name: elasticsearch-ingest
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.14.1
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.2.0
         env:
         - name: CLUSTER_NAME
           value: elasticsearch
