@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: elasticsearch-data-config
+  namespace: qa
   labels:
     app: elasticsearch
     role: data
@@ -30,6 +31,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: elasticsearch-data
+  namespace: qa
   labels:
     app: elasticsearch
     role: data
@@ -45,6 +47,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: elastic-stateful-data
+  namespace: qa
   labels:
     apps: elasticsearch
     role: data
