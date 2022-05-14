@@ -10,15 +10,13 @@ metadata:
 data:
   elasticsearch.yml: |-
     cluster.name: ${CLUSTER_NAME}
+    ingest.geoip.downloader.enabled: false
     node.name: ${NODE_NAME}
     discovery.seed_hosts: ${NODE_LIST}
     cluster.initial_master_nodes: ${MASTER_NODES}
     bootstrap.memory_lock: ${MEMORY_LOCK}
-
     network.host: 0.0.0.0
-
     node.roles: [ data ]
-
     xpack.license.self_generated.type: trial
     xpack.security.enabled: true
   limits.conf: |-
@@ -83,15 +81,26 @@ spec:
         ports:
         - containerPort: 9300
           name: transport
+        resources:
+          limits:
+            memory: "3072Mi"
+            cpu: "2000m"
         volumeMounts:
         - name: config
           mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
           readOnly: true
           subPath: elasticsearch.yml
-        - name: elastic-stateful-data
-          mountPath: /data/db
+        - name: limits
+          mountPath: /etc/security/limits.conf
+          readOnly: true
+          subPath: limits.conf
+        - name: elastic-data
+          mountPath: /usr/share/elasticsearch/data
       volumes:
       - name: config
+        configMap:
+          name: elasticsearch-data-config
+      - name: limits
         configMap:
           name: elasticsearch-data-config
       initContainers:
@@ -100,12 +109,20 @@ spec:
           command: ["sysctl", "-w", "vm.max_map_count=262144"]
           securityContext:
             privileged: true
+        - name: fix-permissions
+          image: busybox
+          command: ["sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data"]
+          securityContext:
+            privileged: true
+          volumeMounts:
+          - name: elastic-data
+            mountPath: /usr/share/elasticsearch/data
   volumeClaimTemplates:
   - metadata:
-      name: elastic-stateful-data
+      name: elastic-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
       storageClassName: rook-ceph-block
       resources:
         requests:
-          storage: 80Gi
+          storage: 100Gi

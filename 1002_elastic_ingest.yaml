@@ -9,15 +9,13 @@ metadata:
 data:
   elasticsearch.yml: |-
     cluster.name: ${CLUSTER_NAME}
+    ingest.geoip.downloader.enabled: false
     node.name: ${NODE_NAME}
     discovery.seed_hosts: ${NODE_LIST}
     cluster.initial_master_nodes: ${MASTER_NODES}
     bootstrap.memory_lock: ${MEMORY_LOCK}
-
     network.host: 0.0.0.0
-
     node.roles: [ ingest ]
-
     xpack.license.self_generated.type: trial
     xpack.security.enabled: true
   limits.conf: |-
@@ -44,18 +42,19 @@ spec:
     name: ingest
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: elastic-ingest
   labels:
     app: elasticsearch
     role: ingest
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: elasticsearch
       role: ingest
+  serviceName: elasticsearch-ingest
+  replicas: 1
   template:
     metadata:
       labels:
@@ -88,22 +87,51 @@ spec:
             mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
             readOnly: true
             subPath: elasticsearch.yml
-          - name: storage
-            mountPath: /data
+          - name: limits
+            mountPath: /etc/security/limits.conf
+            readOnly: true
+            subPath: limits.conf
+          - name: elastic-ingest
+            mountPath: /usr/share/elasticsearch/data
         resources:
           limits:
-            memory: "1024Mi"
-            cpu: "1500m"
+            memory: "3072Mi"
+            cpu: "2000m"
       volumes:
       - name: config
         configMap:
           name: elasticsearch-ingest
-      - name: "storage"
-        emptyDir:
-          medium: ""
+      - name: limits
+        configMap:
+          name: elasticsearch-ingest
       initContainers:
       - name: increase-vm-max-map
         image: busybox
         command: ["sysctl", "-w", "vm.max_map_count=262144"]
         securityContext:
           privileged: true
+      - name: fix-permissions1
+        image: busybox
+        command: ["sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: elastic-ingest
+          mountPath: /usr/share/elasticsearch/data
+      - name: fix-permissions2
+        image: busybox
+        command: ["sh", "-c", "chown -R 1000:1000 /tmp"]
+        securityContext:
+          privileged: true
+  volumeClaimTemplates:
+  - metadata:
+      name: elastic-ingest
+      labels:
+        app: elasticsearch
+        role: ingest
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: rook-ceph-block
+      resources:
+        requests:
+          storage: 10Gi
